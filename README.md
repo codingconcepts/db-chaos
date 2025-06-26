@@ -33,14 +33,6 @@ go run main.go \
 --reseed
 ```
 
-Postgres
-
-
-
-MySQL
-
-
-
 Oracle
 
 ```sh
