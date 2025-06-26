@@ -43,3 +43,9 @@ MySQL
 
 Oracle
 
+```sh
+go run main.go \
+--database oracle \
+--url "oracle://system:password@localhost:1521/defaultdb" \
+--reseed
+```
