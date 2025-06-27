@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"log"
 	"time"
 
 	_ "github.com/sijms/go-ora/v2"
@@ -19,6 +18,8 @@ func NewOracleRepo(url string) (*OracleRepo, error) {
 	if err != nil {
 		return nil, fmt.Errorf("opening databse connection: %w", err)
 	}
+	db.SetMaxOpenConns(3)
+	db.SetConnMaxLifetime(time.Second * 20)
 
 	if err = db.PingContext(context.Background()); err != nil {
 		return nil, fmt.Errorf("error testing database connection: %w", err)
@@ -51,7 +52,6 @@ func (o *OracleRepo) Init(rowCount int, balance float64) error {
 		return fmt.Errorf("seeding table: %w", err)
 	}
 
-	log.Println("created and seeded table successfully")
 	return nil
 }
 
@@ -63,7 +63,6 @@ func (o *OracleRepo) Deinit() error {
 		return fmt.Errorf("dropping table: %w", err)
 	}
 
-	log.Println("dropped table successfully")
 	return nil
 }
 

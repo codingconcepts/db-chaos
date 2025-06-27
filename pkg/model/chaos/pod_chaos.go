@@ -33,15 +33,7 @@ type LabelSelectors struct {
 	StatefulsetKubernetesIoPodName string `yaml:"statefulset.kubernetes.io/pod-name"`
 }
 
-func MakePodFailure(pod, podNS, chaosNS string, duration time.Duration) PodChaos {
-	return makePodChaos(pod, podNS, chaosNS, "pod-failure", duration)
-}
-
-func MakePodKill(pod, podNS, chaosNS string, duration time.Duration) PodChaos {
-	return makePodChaos(pod, podNS, chaosNS, "pod-kill", duration)
-}
-
-func makePodChaos(pod, podNS, chaosNS, action string, duration time.Duration) PodChaos {
+func MakePodChaos(pod, podNS, chaosNS, action string, duration time.Duration) PodChaos {
 	return PodChaos{
 		APIVersion: "chaos-mesh.org/v1alpha1",
 		Kind:       "PodChaos",

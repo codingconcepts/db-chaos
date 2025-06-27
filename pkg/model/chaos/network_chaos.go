@@ -24,15 +24,7 @@ type Target struct {
 	Selector Selector `yaml:"selector"`
 }
 
-func MakeSymmetricPartition(sourcePod, targetPod, podNS, chaosNS string) NetworkChaos {
-	return makePartition(sourcePod, targetPod, podNS, chaosNS, "both")
-}
-
-func MakeAsymmetricPartition(sourcePod, targetPod, podNS, chaosNS string) NetworkChaos {
-	return makePartition(sourcePod, targetPod, podNS, chaosNS, "to")
-}
-
-func makePartition(sourcePod, targetPod, podNS, chaosNS, direction string) NetworkChaos {
+func MakePartition(sourcePod, targetPod, podNS, chaosNS, direction string) NetworkChaos {
 	return NetworkChaos{
 		APIVersion: "chaos-mesh.org/v1alpha1",
 		Kind:       "NetworkChaos",

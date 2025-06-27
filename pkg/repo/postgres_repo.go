@@ -3,7 +3,6 @@ package repo
 import (
 	"context"
 	"fmt"
-	"log"
 	"time"
 
 	crdbpgx "github.com/cockroachdb/cockroach-go/v2/crdb/crdbpgxv5"
@@ -42,7 +41,7 @@ func NewPostgresRepo(url string) (*PostgresRepo, error) {
 }
 
 func (p *PostgresRepo) Init(rowCount int, balance float64) error {
-	const tableStmt = `CREATE TABLE account (
+	const tableStmt = `CREATE TABLE IF NOT EXISTS account (
 										   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
 											 balance DECIMAL NOT NULL
 										 )`
@@ -59,19 +58,17 @@ func (p *PostgresRepo) Init(rowCount int, balance float64) error {
 		return fmt.Errorf("seeding table: %w", err)
 	}
 
-	log.Println("created and seeded table successfully")
 	return nil
 }
 
 func (p *PostgresRepo) Deinit() error {
-	const stmt = `DROP TABLE account`
+	const stmt = `DROP TABLE IF EXISTS account`
 
 	_, err := p.db.Exec(context.Background(), stmt)
 	if err != nil {
 		return fmt.Errorf("dropping table: %w", err)
 	}
 
-	log.Println("dropped table successfully")
 	return nil
 }
 
@@ -126,16 +123,17 @@ func (p *PostgresRepo) PerformTransfer(from, to any, amount float64) (elapsed ti
 }
 
 func (p *PostgresRepo) IsReady() (bool, error) {
-	const stmt = `SELECT COUNT(*) AS underreplicated_ranges
-								FROM crdb_internal.ranges
-								WHERE array_length(replicas, 1) < 3`
+	const stmt = `SELECT
+									SUM((metrics->>'ranges.underreplicated')::DECIMAL) AS total_underreplicated_ranges
+								FROM crdb_internal.kv_store_status
+								LIMIT 1`
 
 	row := p.db.QueryRow(context.Background(), stmt)
 
-	var underreplicatedRanges int
+	var underreplicatedRanges float64
 	if err := row.Scan(&underreplicatedRanges); err != nil {
 		return false, fmt.Errorf("checking ready: %w", err)
 	}
 
-	return true, nil
+	return underreplicatedRanges == 0, nil
 }
